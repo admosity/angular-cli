@@ -12,7 +12,7 @@ export interface CliConfig {
     apps?: {
         root?: string;
         outDir?: string;
-        assets?: string;
+        assets?: string | string[];
         deployUrl?: string;
         index?: string;
         main?: string;
@@ -23,16 +23,31 @@ export interface CliConfig {
         /**
          * Global styles to be included in the build.
          */
-        styles?: string[];
+        styles?: (string | {
+            [name: string]: any;
+            input?: string;
+        })[];
         /**
          * Global scripts to be included in the build.
          */
-        scripts?: string[];
+        scripts?: (string | {
+            [name: string]: any;
+            input?: string;
+        })[];
         /**
          * Name and corresponding file for environment config.
          */
         environments?: {
             [name: string]: any;
+        };
+        /**
+         * Options to pass to style loaders in webpack.
+         */
+        webpackStyleLoaderOptions?: {
+            /**
+             * Paths to include. Paths will be resolved to project root.
+             */
+            includePaths?: string[];
         };
     }[];
     /**

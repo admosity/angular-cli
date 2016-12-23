@@ -44,6 +44,7 @@ export class NgCliWebpackConfig {
       this.ngCliProject.root,
       environment,
       appConfig,
+      config.config,
       baseHref,
       sourcemap,
       vendorChunk,

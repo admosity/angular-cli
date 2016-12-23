@@ -5,8 +5,11 @@ import { SuppressEntryChunksWebpackPlugin } from '../plugins/suppress-entry-chun
 import { packageChunkSort } from '../utilities/package-chunk-sort';
 import { BaseHrefWebpackPlugin } from '@angular-cli/base-href-webpack';
 import { extraEntryParser, makeCssLoaders } from './webpack-build-utils';
+import { CliConfig } from '../lib/config/schema.d';
+
 
 const autoprefixer = require('autoprefixer');
+const postcssDiscardComments = require('postcss-discard-comments');
 const ProgressPlugin = require('webpack/lib/ProgressPlugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const SilentError = require('silent-error');
@@ -27,6 +30,7 @@ export function getWebpackCommonConfig(
   projectRoot: string,
   environment: string,
   appConfig: any,
+  cliConfig: CliConfig,
   baseHref: string,
   sourcemap: boolean,
   vendorChunk: boolean,
@@ -45,6 +49,39 @@ export function getWebpackCommonConfig(
   let entryPoints: { [key: string]: string[] } = {
     main: [appMain]
   };
+
+  // Configure webpack style loaders
+
+  /**
+   * Base settings for webpack style loaders
+   * @type {Object}
+   */
+  const baseStyleLoaderOptions = {
+    sourceMap: sourcemap,
+  };
+
+  // set default to base
+  let styleLoaderOptions = baseStyleLoaderOptions;
+
+  if (appConfig.webpackStyleLoaderOptions) {
+    if (appConfig.webpackStyleLoaderOptions.includePaths) {
+      // resolve paths relative to project root
+      let includePaths = appConfig.webpackStyleLoaderOptions.includePaths.map(
+        (includePath: string) => path.resolve(projectRoot, includePath)
+      );
+      if (cliConfig.defaults.styleExt === 'styl')  {
+        // stylus uses paths
+        styleLoaderOptions = Object.assign({}, baseStyleLoaderOptions, {
+          paths: includePaths
+        });
+      } else {
+        // less and sass use includePaths
+        styleLoaderOptions = Object.assign({}, baseStyleLoaderOptions, {
+          includePaths
+        });
+      }
+    }
+  }
 
   if (!(environment in appConfig.environments)) {
     throw new SilentError(`Environment "${environment}" does not exist.`);
@@ -163,11 +200,15 @@ export function getWebpackCommonConfig(
       new webpack.LoaderOptionsPlugin({
         test: /\.(css|scss|sass|less|styl)$/,
         options: {
-          postcss: [autoprefixer()],
-          cssLoader: { sourceMap: sourcemap },
-          sassLoader: { sourceMap: sourcemap },
-          lessLoader: { sourceMap: sourcemap },
-          stylusLoader: { sourceMap: sourcemap },
+          postcss: [
+            autoprefixer(),
+            // NOTE: Moved check here for prod build
+            ...(environment === 'prod' ? [postcssDiscardComments] : [])
+          ],
+          cssLoader: styleLoaderOptions,
+          sassLoader: styleLoaderOptions,
+          lessLoader: styleLoaderOptions,
+          stylusLoader: styleLoaderOptions,
           // context needed as a workaround https://github.com/jtangelder/sass-loader/issues/285
           context: projectRoot,
         },
