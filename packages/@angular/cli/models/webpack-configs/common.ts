@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as webpack from 'webpack';
 import * as path from 'path';
 import * as CopyWebpackPlugin from 'copy-webpack-plugin';
@@ -28,6 +29,10 @@ export function getCommonConfig(wco: WebpackConfigOptions) {
 
   const appRoot = path.resolve(projectRoot, appConfig.root);
   const nodeModules = path.resolve(projectRoot, 'node_modules');
+  const cliConfigRoot = path.resolve(projectRoot, '.angular-cli');
+
+  const userCustomWebpackRules = path.join(cliConfigRoot, 'webpack-rules.js');
+  const userCustomWebpackPlugins = path.join(cliConfigRoot, 'webpack-plugins.js');
 
   let extraPlugins: any[] = [];
   let extraRules: any[] = [];
@@ -168,6 +173,25 @@ export function getCommonConfig(wco: WebpackConfigOptions) {
 
   if (buildOptions.namedChunks) {
     extraPlugins.push(new NamedLazyChunksWebpackPlugin());
+  }
+
+  // Check for user defined rules and plugins
+  if (fs.existsSync(userCustomWebpackRules)) {
+    try {
+      extraRules = [...extraRules, ...require(userCustomWebpackRules)]
+    } catch (e) {
+      const message = `The custom webpack rules definition file at ${userCustomWebpackRules} is not valid.`;
+      throw new SilentError(message);
+    }
+  }
+
+  if (fs.existsSync(userCustomWebpackPlugins)) {
+    try {
+      extraPlugins = [...extraPlugins, ...require(userCustomWebpackPlugins)]
+    } catch (e) {
+      const message = `The custom webpack plugins definition file at ${userCustomWebpackPlugins} is not valid.`;
+      throw new SilentError(message);
+    }
   }
 
   // Load rxjs path aliases.
