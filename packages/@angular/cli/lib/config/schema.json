@@ -218,7 +218,7 @@
             "additionalProperties": true
           },
           "extraWebpack": {
-            "description": "Experimental support for custom webpack configuration per environment in commonjs format. Paths will be resolved to project root.",
+            "description": "Experimental support for custom webpack configuration per build target in commonjs format. Paths will be resolved to project root.",
             "type": "object",
             "properties": {
               "development": {
