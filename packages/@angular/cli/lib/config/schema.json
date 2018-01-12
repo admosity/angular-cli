@@ -218,15 +218,15 @@
             "additionalProperties": true
           },
           "extraWebpack": {
-            "description": "Custom webpack rules and plugins file per environment. Paths will be resolved to project root.",
+            "description": "Experimental support for custom webpack configuration per environment in commonjs format. Paths will be resolved to project root.",
             "type": "object",
             "properties": {
               "development": {
-                "description": "Development rules and plugins file.",
+                "description": "Path to development webpack configuration file.",
                 "type": "string"
               },
               "production": {
-                "description": "Production rules and plugins file.",
+                "description": "Path to production webpack configuration file.",
                 "type": "string"
               }
             }

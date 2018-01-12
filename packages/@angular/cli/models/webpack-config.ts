@@ -87,8 +87,6 @@ export class NgCliWebpackConfig<T extends BuildOptions = BuildOptions> {
   }
 
   public getTargetConfigCustom(webpackConfigOptions: WebpackConfigOptions<T>): any {
-    console.log('GETTING CUSTOM CONFIG');
-
     const { appConfig, buildOptions: { target }, projectRoot } = webpackConfigOptions;
 
     const appRoot = path.resolve(projectRoot, appConfig.root);
@@ -104,7 +102,7 @@ export class NgCliWebpackConfig<T extends BuildOptions = BuildOptions> {
             customConfig = require(extraWebpackConfigFilePath);
           } catch (e) {
             const message = oneLine`
-              The custom webpack plugins definition file at ${extraWebpackConfigFilePath}
+              The custom webpack configuration file at ${extraWebpackConfigFilePath}
               is not valid.`;
             throw new SilentError(message);
           }
@@ -112,10 +110,8 @@ export class NgCliWebpackConfig<T extends BuildOptions = BuildOptions> {
 
       }
     }
-    console.log(customConfig);
 
     return customConfig;
-
   }
 
   // Validate build options
